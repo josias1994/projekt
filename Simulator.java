@@ -4,51 +4,37 @@ import java.util.*;
 *	Simulates the reproduction, mutation and death of a given population and a given city.
 */
 public class Simulator{
+	private static int initPop, maxPop, pDeath, pMutate, pRepro;
+	private static double pOmega;
+	private static Scanner Reader;
+
+	/*
+	*	Initializations
+	*/
+	private static void init(){
+		System.out.println("What is your initial population?");
+		initPop = Reader.nextInt();
+		System.out.println("What is your maximum population?");
+		maxPop = Reader.nextInt();
+		System.out.println("What is the value of the parameter Omega?");
+		pOmega = Reader.nextDouble();
+		System.out.println("What is the value of the parameter D?");
+		pDeath = Reader.nextInt();
+		System.out.println("What is the value of the parameter M?");
+		pMutate = Reader.nextInt();
+		System.out.println("What is the value of the parameter R?");
+		pRepro = Reader.nextInt();
+	}
 
 	public static void main(String[] args){
-		int initPop, maxPop, pDeath, pMutate, pRepro;
-		double pOmega;
-		// Import cities[]
-
-
-
-
-		/*
-		*	Get userinput for parameters
-		*/
-		Scanner reader = new Scanner(System.in);
-		System.out.println("What is your initial population?");
-		initPop = reader.nextInt();
-		System.out.println("What is your maximum population?");
-		maxPop = reader.nextInt();
-		System.out.println("What is the value of the parameter Omega?");
-		pOmega = reader.nextDouble();
-		System.out.println("What is the value of the parameter D?");
-		pDeath = reader.nextInt();
-		System.out.println("What is the value of the parameter M?");
-		pMutate = reader.nextInt();
-		System.out.println("What is the value of the parameter R?");
-		pRepro = reader.nextInt();
-
-		/*
-		*	Main loop to interact with EventQueue & Population class
-		*/
-		EventQueue Queue = new EventQueue();
-		Population CurrentPopulation = new Population(0.001); //takes pOmega
-
-		/*
-		*	Add an individual with a random list of cities to the population.
-		* Do this for all individual from initial population.
-		*/
-		CityGenerator Generator = new CityGenerator();
-		for(int i=0; i<initPop; i++){
-			Individual CurrentPerson = new Individual();
-
+		Reader = new Scanner(System.in);
+		init();
+		boolean goOn = true;
+		while(goOn){
+			goOn = false;
 		}
 
-		// CurrentPopulation.add(CurrentPerson(Generator.generate()));
 
-
-
+		Reader.close();
 	}
 }
