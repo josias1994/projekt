@@ -16,8 +16,6 @@ public class Simulator{
 	/*
 	*	Initializations
 	*/
-
-
 	private static void init(){
 		System.out.println("What is your initial population?");
 		initPop = Reader.nextInt();
@@ -32,10 +30,12 @@ public class Simulator{
 		System.out.println("What is the value of the parameter R?");
 		pRepro = Reader.nextInt();
 	}
-	//constructors
-
-		CityGenerator cityGenerator = new CityGenerator();
-		EventQueue eventQueue = new EventQueue();
+	
+	/*
+	* Constructors
+	*/
+	CityGenerator cityGenerator = new CityGenerator();
+	EventQueue eventQueue = new EventQueue();
 
 	public static void main(String[] args){
 		Reader = new Scanner(System.in);
@@ -44,35 +44,18 @@ public class Simulator{
 		while(goOn){
 			goOn = false;
 		}
-			System.out.println(pOmega);
+
 		City[] cities = new CityGenerator().generate();
-		Population pop = new Population(pOmega); 
+		Population pop = new Population(pOmega);
 
 		int i = 0;
-
 		while(i<initPop){
 			Individual k = new Individual(cities);
 			pop.add(k);
 			i=i+1;
-
-		
 		}
 
-	
-
-			EventQueue eventQueue = new EventQueue();
-		/*	Event e = new Event(DEATH, 1.0, k);
-
-			eventQueue.add(e);
-		System.out.println(e.toString());
-		System.out.println(e.type());
-*/
-
-
-
-System.out.println(pop.size());
-
-
+		System.out.println("Population Size: " + pop.size());
 		Reader.close();
 	}
 }
