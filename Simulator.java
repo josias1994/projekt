@@ -215,7 +215,7 @@ public class Simulator{
 		System.out.println("Current time: " + currentTime);
 		System.out.println("Events Simulated: " + countEvents);
 		System.out.println("Population size: " + pop.size());
-		System.out.println("Best path: " + bestPathString(pop.bestPath()));
+		System.out.println("The best path is: " + bestPathString(pop.bestPath()) + " (cost: " + pathCost(new Individual(pop.bestPath())) + ")");
 	}
 
 	private static void endSimulation(){
