@@ -178,9 +178,23 @@ public class Simulator{
 
 	private static void endSimulation(){
 		System.out.println("----------------");
-		double bestPathCost = new Individual(pop.bestPath()).cost();
-		Individual bestIndividual = new Individual(pop.bestPath());
-		System.out.println("The best path is: " + bestIndividual.path() + " (cost: " + bestPathCost + " )");
+		Individual optimalIndividual = new Individual(pop.bestPath());
+		double bestPathCost = optimalIndividual.cost();
+		City[] bestPathList = optimalIndividual.path();
+		System.out.println("The best path is: " + bestPath(bestPathList) + " (cost: " + bestPathCost + ")");
+
+
+		System.out.println(bestPathList[0].name());
 	}
 
+	/*
+	*	Returns the City[] in the correct format
+	*/
+	private static String bestPath(City[] listOfCities){
+		String bestPath = "";
+		for(City city : listOfCities){
+    	bestPath += (city.name() + "; ");
+		}
+		return bestPath;
+	}
 }
