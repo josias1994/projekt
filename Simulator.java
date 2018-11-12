@@ -190,7 +190,7 @@ public class Simulator{
 	private static void displaySimulation(Event currentEvent){
 		switch(simulationMode) {
 			case 1:
-				if(((countInterval - 0.01 > currentTime && currentTime < countInterval + 0.01)) && ((int) currentTime % initInterval) == 0){
+				if(countInterval + 0.01  >  currentTime && countInterval < currentTime && ((int) currentTime % initInterval) == 0){
 					displayObservation();
 					countInterval += initInterval;
 				}
@@ -198,10 +198,11 @@ public class Simulator{
 			case 2:
 				if((countEvents % initInterval) == 0){
 					displayObservation();
+					countInterval += initInterval;
 				}
 				break;
 			case 3:
-				System.out.println(currentEvent.toString());
+				System.out.println("Simulating: " + currentEvent.toString());
 				break;
 			case 4:
 				break;
@@ -218,7 +219,6 @@ public class Simulator{
 	}
 
 	private static void endSimulation(){
-		System.out.println("----------------");
 		System.out.println("The best path is: " + bestPathString(pop.bestPath()) + " (cost: " + pathCost(new Individual(pop.bestPath())) + ")");
 	}
 
