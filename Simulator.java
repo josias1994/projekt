@@ -51,13 +51,19 @@ public class Simulator{
 						case 'm':
 							String oldPath = currentEvent.toString();
 							currentEvent.individual().mutate();
+							//Add next mutation for the mutated individual to EventQueue
 							if(oldPath != currentEvent.toString()){
-								// Mutate boy
+								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate));
+							}
+							else{
+								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate/10));
 							}
 							break;
+
 						case 'r':
 
 							break;
+
 						case 'd':
 
 							break;
@@ -100,7 +106,7 @@ public class Simulator{
 	}
 
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
-		double mTime = new RandomUtils().getRandomTime(timeProbability);
+		double mTime = new RandomUtils().getRandomTime(averageTimeProbability);
 		Event mutationEvent = new Event(MUTATION, mTime, person);
 		queue.add(mutationEvent);
 	}
@@ -120,7 +126,7 @@ public class Simulator{
 	*	Ends simulation by giving results and a conclusion
 	*/
 	private static void endSimulation(){
-		System.out.println("Simulation ended.");
+		System.out.println("----------------");
 		System.out.println("Simulation ended.");
 	}
 
