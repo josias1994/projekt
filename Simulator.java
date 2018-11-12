@@ -49,21 +49,18 @@ public class Simulator{
 					goOn = checkTime(currentEvent.time());
 					switch (currentEvent.type()) {
 						case 'm':
-							String oldPath = currentEvent.toString();
+							String oldPath = currentEvent.individual().path();
 							currentEvent.individual().mutate();
 							//Add next mutation for the mutated individual to EventQueue
-							if(oldPath != currentEvent.toString()){
+							if(oldPath != currentEvent.individual.path()){
 								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate));
-							}
-							else{
+							}else{
 								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate/10));
 							}
 							break;
-
 						case 'r':
-
+							reproductionEvent(currentEvent.individual(), double averageTimeProbability);
 							break;
-
 						case 'd':
 
 							break;
@@ -87,39 +84,47 @@ public class Simulator{
 		while(i<initPop){
 			Individual person = new Individual(currentCities);
 			pop.add(person);
-			createInitialEvents(person);
+			addBirthEvents(person);
 			i=i+1;
 		}
 	}
 
 	/*
-	*	Adds a mutation-, reproduction- and death event for individual
+	*	Adds mutation-, reproduction- and death event for individual with standard values
 	*/
-	private static void createInitialEvents(Individual person){
-		addMutationEvent(person);
-		double rTime = new RandomUtils().getRandomTime((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro);
+	private static void addBirthEvents(Individual person){
+		addMutationEvent(person, ((1-(Math.log(pop.fitness(person))))));
+		addReproductionEvent(person, ((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro));
 		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
-		Event reproductionEvent = new Event(REPRODUCTION, rTime, person);
+
 		Event deathEvent = new Event(DEATH, dTime, person);
-		queue.add(reproductionEvent);
+
 		queue.add(deathEvent);
 	}
 
-	// Method overloading to make numbers easier
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
 		double mTime = new RandomUtils().getRandomTime(averageTimeProbability);
 		Event mutationEvent = new Event(MUTATION, mTime, person);
 		queue.add(mutationEvent);
 	}
 
-	private static void addMutationEvent(Individual person){
-		double mTime = new RandomUtils().getRandomTime(((1-(Math.log(pop.fitness(person)))) * pMutate));
-		Event mutationEvent = new Event(MUTATION, mTime, person);
-		queue.add(mutationEvent);
+	private static void addReproductionEvent(Individual person, double averageTimeProbability){
+		double rTime = new RandomUtils().getRandomTime(averageTimeProbability);
+		Event reproductionEvent = new Event(REPRODUCTION, rTime, person);
+		queue.add(reproductionEvent);
 	}
 
-	private static void addReproductionEvent(Individual parent, double averageTimeProbability){
-		addMutationEvent(parent);
+	/*
+	*	Creates child which is mutation of parent and adds new ReproductionEvent & BirthEvents
+	*/
+	private static void reproductionEvent(Individual parent){
+		pop.add(parent.reproduce());
+		addReproductionEvent(parent, ((1 - (Math.log(pop.fitness(parent)))) * (initPop/maxPop) * pRepro));
+		addBirthEvents(child);
+	}
+
+	private static deathEvent(){
+		
 	}
 
 	/*
