@@ -4,7 +4,7 @@ import java.util.*;
 *	Simulates the reproduction, mutation and death of a given population and a given city.
 */
 public class Simulator{
-	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r';
+	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r', TUNITS='t', NUNITS='n', VERBOSE='v', SILENT='s';
 	private static int initPop, maxPop, pDeath, pMutate, pRepro;
 	private static double pOmega, simulationTime;
 	private static boolean goOn = true;
@@ -16,19 +16,19 @@ public class Simulator{
 	*	Initializations
 	*/
 	private static void init(){
-		System.out.println("What is your initial population?");
+		System.out.print("Initial population: ");
 		initPop = Reader.nextInt();
-		System.out.println("What is your maximum population?");
+		System.out.print("Maximum population: ");
 		maxPop = Reader.nextInt();
-		System.out.println("What is the value of the parameter Omega?");
+		System.out.print("Value of the parameter Omega: ");
 		pOmega = Reader.nextDouble();
-		System.out.println("What is the value of the parameter D?");
+		System.out.print("Value of the parameter D: ");
 		pDeath = Reader.nextInt();
-		System.out.println("What is the value of the parameter M?");
+		System.out.print("Value of the parameter M: ");
 		pMutate = Reader.nextInt();
-		System.out.println("What is the value of the parameter R?");
+		System.out.print("Value of the parameter R: ");
 		pRepro = Reader.nextInt();
-		System.out.println("How long do you want to run the simulation?");
+		System.out.print("Time to run the simulation: ");
 		simulationTime = Reader.nextInt();
 	}
 
@@ -87,16 +87,16 @@ public class Simulator{
 		while(i<initPop){
 			Individual person = new Individual(currentCities);
 			pop.add(person);
-			createEvents(person);
+			createInitialEvents(person);
 			i=i+1;
 		}
 	}
 
 	/*
-	*	Adds a Mutation-, Reproduction- and Death-event to the EventQueue, for the specified Individual
+	*	Adds a mutation-, reproduction- and death event for individual
 	*/
-	private static void createEvents(Individual person){
-		addMutationEvent(person, ((1-(Math.log(pop.fitness(person)))) * pMutate));
+	private static void createInitialEvents(Individual person){
+		addMutationEvent(person);
 		double rTime = new RandomUtils().getRandomTime((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro);
 		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
 		Event reproductionEvent = new Event(REPRODUCTION, rTime, person);
@@ -105,10 +105,21 @@ public class Simulator{
 		queue.add(deathEvent);
 	}
 
+	// Method overloading to make numbers easier
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
 		double mTime = new RandomUtils().getRandomTime(averageTimeProbability);
 		Event mutationEvent = new Event(MUTATION, mTime, person);
 		queue.add(mutationEvent);
+	}
+
+	private static void addMutationEvent(Individual person){
+		double mTime = new RandomUtils().getRandomTime(((1-(Math.log(pop.fitness(person)))) * pMutate));
+		Event mutationEvent = new Event(MUTATION, mTime, person);
+		queue.add(mutationEvent);
+	}
+
+	private static void addReproductionEvent(Individual parent, double averageTimeProbability){
+		addMutationEvent(parent);
 	}
 
 	/*
