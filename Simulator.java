@@ -3,7 +3,7 @@ import java.util.*;
 /*
 *	Simulates the reproduction, mutation and death of a given population, according
 * to the parameters below. Population declared as doubles to allow for easier calculations,
-* but input taken as Ints as because that's what makes sense logically.
+* but input taken as Ints as that's what makes sense logically.
 */
 public class Simulator{
 	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r';
