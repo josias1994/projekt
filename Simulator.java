@@ -90,15 +90,19 @@ public class Simulator{
 	*	Adds a Mutation-, Reproduction- and Death-event to the EventQueue, for the specified Individual
 	*/
 	private static void createEvents(Individual person){
-		double mTime = new RandomUtils().getRandomTime((1-(Math.log(pop.fitness(person)))) * pMutate);
+		addMutationEvent(person, ((1-(Math.log(pop.fitness(person)))) * pMutate));
 		double rTime = new RandomUtils().getRandomTime((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro);
 		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
-		Event mutationEvent = new Event(MUTATION, mTime, person);
-		Event reproductionEvent = new Event(REPRODUCTION, mTime, person);
-		Event deathEvent = new Event(DEATH, mTime, person);
-		queue.add(mutationEvent);
+		Event reproductionEvent = new Event(REPRODUCTION, rTime, person);
+		Event deathEvent = new Event(DEATH, dTime, person);
 		queue.add(reproductionEvent);
 		queue.add(deathEvent);
+	}
+
+	private static void addMutationEvent(Individual person, double averageTimeProbability){
+		double mTime = new RandomUtils().getRandomTime(timeProbability);
+		Event mutationEvent = new Event(MUTATION, mTime, person);
+		queue.add(mutationEvent);
 	}
 
 	/*
