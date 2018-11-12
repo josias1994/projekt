@@ -4,14 +4,13 @@ import java.util.*;
 *	Simulates the reproduction, mutation and death of a given population and a given city.
 */
 public class Simulator{
-	private static int initPop, maxPop, pDeath, pMutate, pRepro;
-	private static Scanner Reader;
-	private static double pOmega;
 	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r';
+	private static int initPop, maxPop, pDeath, pMutate, pRepro;
+	private static double pOmega, simulationTime;
+	private static boolean goOn = true;
+	private static Scanner Reader;
 	private static Population pop = new Population(pOmega);
-	private static EventQueue eventQueue = new EventQueue();
-
-
+	private static EventQueue queue = new EventQueue();
 
 	/*
 	*	Initializations
@@ -29,21 +28,53 @@ public class Simulator{
 		pMutate = Reader.nextInt();
 		System.out.println("What is the value of the parameter R?");
 		pRepro = Reader.nextInt();
+		System.out.println("How long do you want to run the simulation?");
+		simulationTime = Reader.nextInt();
 	}
 
 	public static void main(String[] args){
 		Reader = new Scanner(System.in);
 		init();
-
 		City[] currentCities = new CityGenerator().generate();
 		createInitialPopulation(currentCities);
 
+		/*
+		*	Main Loop
+		*/
+		do{
+			if(queue.hasNext()){
+				Event currentEvent = queue.next();
+				// Check if the individual which the event describes is still alive
+				if(pop.contains(currentEvent.individual())){
+					goOn = checkTime(currentEvent.time());
+					switch (currentEvent.type()) {
+						case 'm':
+							String oldPath = currentEvent.toString();
+							currentEvent.individual().mutate();
+							if(oldPath != currentEvent.toString()){
+								// Mutate boy
+							}
+							break;
+						case 'r':
 
+							break;
+						case 'd':
+
+							break;
+					}
+				}
+			} else {
+				goOn = false;
+			}
+		}while(goOn);
+
+
+		endSimulation();
 		Reader.close();
 	}
 
 	/*
-	*	Creates the Initial Population and the Events following
+	*	Creates the Initial Population and the Events following. Assumes initPop >= 0
 	*/
 	private static void createInitialPopulation(City[] currentCities){
 		int i = 0;
@@ -65,10 +96,28 @@ public class Simulator{
 		Event mutationEvent = new Event(MUTATION, mTime, person);
 		Event reproductionEvent = new Event(REPRODUCTION, mTime, person);
 		Event deathEvent = new Event(DEATH, mTime, person);
-		eventQueue.add(mutationEvent);
-		eventQueue.add(reproductionEvent);
-		eventQueue.add(deathEvent);
+		queue.add(mutationEvent);
+		queue.add(reproductionEvent);
+		queue.add(deathEvent);
 	}
 
+	/*
+	*	Checks currentTime to see if simulation should continue
+	*/
+	private static boolean checkTime(double currentTime){
+		if(currentTime >= simulationTime){
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	/*
+	*	Ends simulation by giving results and a conclusion
+	*/
+	private static void endSimulation(){
+		System.out.println("Simulation ended.");
+		System.out.println("Simulation ended.");
+	}
 
 }
