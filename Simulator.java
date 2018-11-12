@@ -49,17 +49,17 @@ public class Simulator{
 					goOn = checkTime(currentEvent.time());
 					switch (currentEvent.type()) {
 						case 'm':
-							String oldPath = currentEvent.individual().path();
+							City[] oldPath = currentEvent.individual().path();
 							currentEvent.individual().mutate();
 							//Add next mutation for the mutated individual to EventQueue
-							if(oldPath != currentEvent.individual.path()){
+							if(oldPath != currentEvent.individual().path()){
 								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate));
 							}else{
 								addMutationEvent(currentEvent.individual(), ((1-(Math.log(pop.fitness(currentEvent.individual())))) * pMutate/10));
 							}
 							break;
 						case 'r':
-							reproductionEvent(currentEvent.individual(), double averageTimeProbability);
+							reproductionEvent(currentEvent.individual());
 							break;
 						case 'd':
 
@@ -95,11 +95,7 @@ public class Simulator{
 	private static void addBirthEvents(Individual person){
 		addMutationEvent(person, ((1-(Math.log(pop.fitness(person))))));
 		addReproductionEvent(person, ((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro));
-		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
-
-		Event deathEvent = new Event(DEATH, dTime, person);
-
-		queue.add(deathEvent);
+		addDeathEvent(person);
 	}
 
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
@@ -114,22 +110,27 @@ public class Simulator{
 		queue.add(reproductionEvent);
 	}
 
-	/*
-	*	Creates child which is mutation of parent and adds new ReproductionEvent & BirthEvents
-	*/
+	private static void addDeathEvent(Individual person){
+		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
+		Event deathEvent = new Event(DEATH, dTime, person);
+		queue.add(deathEvent);
+	}
+
 	private static void reproductionEvent(Individual parent){
-		pop.add(parent.reproduce());
+		Individual child = parent.reproduce();
+		pop.add(child);
 		addReproductionEvent(parent, ((1 - (Math.log(pop.fitness(parent)))) * (initPop/maxPop) * pRepro));
 		addBirthEvents(child);
 	}
 
-	private static deathEvent(){
-		
+	private static void deathEvent(Individual person){
+		if(new RandomUtils().getRandomEvent(1 - pop.fitness(person) * pop.fitness(person))){
+			pop.remove(person);
+		} else {
+			addDeathEvent(person);
+		}
 	}
 
-	/*
-	*	Checks currentTime to see if simulation should continue
-	*/
 	private static boolean checkTime(double currentTime){
 		if(currentTime >= simulationTime){
 			return false;
@@ -138,9 +139,6 @@ public class Simulator{
 		}
 	}
 
-	/*
-	*	Ends simulation by giving results and a conclusion
-	*/
 	private static void endSimulation(){
 		System.out.println("----------------");
 		System.out.println("Simulation ended.");
