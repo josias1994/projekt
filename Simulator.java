@@ -6,9 +6,11 @@ import java.util.*;
 * but input taken as Ints as because that's what makes sense logically.
 */
 public class Simulator{
-	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r', TUNITS='t', NUNITS='n', VERBOSE='v', SILENT='s';
+	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r';
+	private static int simulationMode, initInterval, countEvents, countInterval;
 	private static double targetTime, initPop, maxPop, pOmega, pDeath, pMutate, pRepro, currentTime;
 	private static boolean goOn = true;
+	private static boolean tUnits, nUnits, verbose, silent = false;
 	private static Scanner Reader;
 	private static Population pop = new Population(pOmega);
 	private static EventQueue queue = new EventQueue();
@@ -31,6 +33,14 @@ public class Simulator{
 		pRepro = Reader.nextDouble();
 		System.out.print("Time to run the simulation: ");
 		targetTime = Reader.nextDouble();
+		System.out.print("Simulation mode (1: every t units; 2: every n events; 3: verbose; 4: silent): ");
+		simulationMode = Reader.nextInt();
+		if((simulationMode == 1) || (simulationMode == 2)){
+			System.out.print("Interval between observations: ");
+			initInterval = Reader.nextInt();
+			countInterval = initInterval;
+			countEvents = 0;
+		}
 	}
 
 	public static void main(String[] args){
@@ -46,7 +56,8 @@ public class Simulator{
 				if(checkTime(currentTime)){
 					Individual currentIndividual = currentEvent.individual();
 					simulateEvent(currentEvent, currentIndividual);
-					System.out.println(currentEvent.toString());
+					countEvents += 1;
+					displaySimulation(currentEvent);
 				}else{
 					goOn = false;
 				}
@@ -69,6 +80,9 @@ public class Simulator{
 		}
 	}
 
+	/*
+	*	Switches and simulates according to Event.type()
+	*/
 	private static void simulateEvent(Event currentEvent, Individual currentIndividual){
 		// Check if the individual the event describes is still alive
 		if(pop.contains(currentIndividual)){
@@ -93,7 +107,7 @@ public class Simulator{
 	}
 
 	/*
-	*	Adds mutation-, reproduction- and death event for individual with standard values
+	*	Creates 3 standard Events when a new Individual is created
 	*/
 	private static void addBirthEvents(Individual person){
 		addMutationEvent(person, ((1-(Math.log(pop.fitness(person))))));
@@ -165,9 +179,6 @@ public class Simulator{
 		return(nowTime += e.time());
 	}
 
-	/*
-	*	Check if any of the exit-parameters have been met.
-	*/
 	private static boolean checkTime(double now){
 		if(now >= targetTime){
 			return false;
@@ -176,25 +187,53 @@ public class Simulator{
 		}
 	}
 
+	private static void displaySimulation(Event currentEvent){
+		switch(simulationMode) {
+			case 1:
+				if(((countInterval - 0.01 > currentTime && currentTime < countInterval + 0.01)) && ((int) currentTime % initInterval) == 0){
+					displayObservation();
+					countInterval += initInterval;
+				}
+				break;
+			case 2:
+				if((countEvents % initInterval) == 0){
+					displayObservation();
+				}
+				break;
+			case 3:
+				System.out.println(currentEvent.toString());
+				break;
+			case 4:
+				break;
+		}
+	}
+
+	private static void displayObservation(){
+		System.out.println("\nObservation");
+		System.out.println("-----------");
+		System.out.println("Current time: " + currentTime);
+		System.out.println("Events Simulated: " + countEvents);
+		System.out.println("Population size: " + pop.size());
+		System.out.println("Best path: " + bestPathString(pop.bestPath()));
+	}
+
 	private static void endSimulation(){
 		System.out.println("----------------");
-		Individual optimalIndividual = new Individual(pop.bestPath());
-		double bestPathCost = optimalIndividual.cost();
-		City[] bestPathList = optimalIndividual.path();
-		System.out.println("The best path is: " + bestPath(bestPathList) + " (cost: " + bestPathCost + ")");
-
-
-		System.out.println(bestPathList[0].name());
+		System.out.println("The best path is: " + bestPathString(pop.bestPath()) + " (cost: " + pathCost(new Individual(pop.bestPath())) + ")");
 	}
 
 	/*
-	*	Returns the City[] in the correct format
+	*	Returns the names of every City in City[] as a String in the correct format
 	*/
-	private static String bestPath(City[] listOfCities){
+	private static String bestPathString(City[] listOfCities){
 		String bestPath = "";
 		for(City city : listOfCities){
     	bestPath += (city.name() + "; ");
 		}
 		return bestPath;
+	}
+
+	private static double pathCost(Individual bestIndividual){
+		return(bestIndividual.cost());
 	}
 }
