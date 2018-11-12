@@ -2,19 +2,19 @@ import java.util.*;
 
 /*
 *	Simulates the reproduction, mutation and death of a given population, according
-to the parameters below.
+* to the parameters below. Population declared as doubles to allow for easier calculations,
+* but input taken as Ints as because that's what makes sense logically.
 */
 public class Simulator{
 	private static final char DEATH='d', MUTATION='m', REPRODUCTION='r', TUNITS='t', NUNITS='n', VERBOSE='v', SILENT='s';
-	private static int initPop, maxPop, pDeath, pMutate, pRepro;
-	private static double pOmega, simulationTime;
+	private static double targetTime, initPop, maxPop, pOmega, pDeath, pMutate, pRepro, currentTime;
 	private static boolean goOn = true;
 	private static Scanner Reader;
 	private static Population pop = new Population(pOmega);
 	private static EventQueue queue = new EventQueue();
 
 	/*
-	*	Initializations
+	*	Initializations.
 	*/
 	private static void init(){
 		System.out.print("Initial population: ");
@@ -24,13 +24,13 @@ public class Simulator{
 		System.out.print("Value of the parameter Omega: ");
 		pOmega = Reader.nextDouble();
 		System.out.print("Value of the parameter D: ");
-		pDeath = Reader.nextInt();
+		pDeath = Reader.nextDouble();
 		System.out.print("Value of the parameter M: ");
-		pMutate = Reader.nextInt();
+		pMutate = Reader.nextDouble();
 		System.out.print("Value of the parameter R: ");
-		pRepro = Reader.nextInt();
+		pRepro = Reader.nextDouble();
 		System.out.print("Time to run the simulation: ");
-		simulationTime = Reader.nextInt();
+		targetTime = Reader.nextDouble();
 	}
 
 	public static void main(String[] args){
@@ -40,37 +40,13 @@ public class Simulator{
 		createInitialPopulation(currentCities);
 		do{
 			if(queue.hasNext()){
-				System.out.println("hasNext=true;");
-				Event currentEvent = queue.next();
-				System.out.println(queue.next().time());
-				Individual currentIndividual = currentEvent.individual();
-				goOn = endCheck(currentEvent);
 				epidemicCheck();
+				Event currentEvent = queue.next();
+				addTime(currentEvent);
+				Individual currentIndividual = currentEvent.individual();
+				simulateEvent(currentEvent, currentIndividual);
 				System.out.println(currentEvent.toString());
-
-				// Check if the individual the event describes is still alive
-				if(pop.contains(currentIndividual)){
-					switch (currentEvent.type()) {
-						case MUTATION:
-							City[] oldPath = currentIndividual.path();
-							mutationEvent(currentIndividual);
-							//Add next mutation for the mutated individual to EventQueue (dependency on oldPath)
-							if(oldPath != currentIndividual.path()){
-								addMutationEvent(currentIndividual, ((1-(Math.log(pop.fitness(currentIndividual)))) * pMutate));
-							}else{
-								addMutationEvent(currentIndividual, ((1-(Math.log(pop.fitness(currentIndividual)))) * pMutate/10));
-							}
-							break;
-						case REPRODUCTION:
-							reproductionEvent(currentIndividual);
-							break;
-						case DEATH:
-							deathEvent(currentIndividual);
-							break;
-					}
-				}
-			} else {
-				goOn = false;
+				goOn = checkTime(currentTime);
 			}
 		}while(goOn);
 		endSimulation();
@@ -90,13 +66,36 @@ public class Simulator{
 		}
 	}
 
+	private static void simulateEvent(Event currentEvent, Individual currentIndividual){
+		// Check if the individual the event describes is still alive
+		if(pop.contains(currentIndividual)){
+			switch (currentEvent.type()) {
+				case 'm':
+					City[] oldPath = currentIndividual.path();
+					mutationEvent(currentIndividual);
+					if(oldPath != currentIndividual.path()){
+						addMutationEvent(currentIndividual, ((1-(Math.log(pop.fitness(currentIndividual)))) * pMutate));
+					}else{
+						addMutationEvent(currentIndividual, ((1-(Math.log(pop.fitness(currentIndividual)))) * pMutate/10));
+					}
+					break;
+				case 'r':
+					reproductionEvent(currentIndividual);
+					break;
+				case 'd':
+					deathEvent(currentIndividual);
+					break;
+			}
+		}
+	}
+
 	/*
 	*	Adds mutation-, reproduction- and death event for individual with standard values
 	*/
 	private static void addBirthEvents(Individual person){
 		addMutationEvent(person, ((1-(Math.log(pop.fitness(person))))));
 		addReproductionEvent(person, ((1-(Math.log(pop.fitness(person)))) * (initPop/maxPop) * pRepro));
-		addDeathEvent(person);
+		addDeathEvent(person, (1-(Math.log(1 - pop.fitness(person)))) * pDeath);
 	}
 
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
@@ -111,36 +110,40 @@ public class Simulator{
 		queue.add(reproductionEvent);
 	}
 
-	private static void addDeathEvent(Individual person){
-		double dTime = new RandomUtils().getRandomTime((1-(Math.log(1 - pop.fitness(person)))) * pDeath);
+	private static void addDeathEvent(Individual person, double averageTimeProbability){
+		double dTime = new RandomUtils().getRandomTime(averageTimeProbability);
 		Event deathEvent = new Event(DEATH, dTime, person);
 		queue.add(deathEvent);
 	}
 
 	private static void mutationEvent(Individual person){
-		if(new RandomUtils().getRandomEvent((1 - pop.fitness(person)) * (1 - pop.fitness(person)))){
+		if(new RandomUtils().getRandomEvent((1.0 - pop.fitness(person)) * (1.0 - pop.fitness(person)))){
 			person.mutate();
-			if(new RandomUtils().getRandomEvent(30)){
+			if(new RandomUtils().getRandomEvent(30.0)){
 				person.mutate();
-				if(new RandomUtils().getRandomEvent(15)){
+				if(new RandomUtils().getRandomEvent(15.0)){
 					person.mutate();
 				}
 			}
 		}
 	}
 
+	/*
+	*	Assumes maxPop > 0
+	*/
 	private static void reproductionEvent(Individual parent){
 		Individual child = parent.reproduce();
 		pop.add(child);
-		addReproductionEvent(parent, ((1 - (Math.log(pop.fitness(parent)))) * (initPop/maxPop) * pRepro));
+
+		addReproductionEvent(parent, ((1.00 - Math.log(pop.fitness(parent))) * (initPop/maxPop) * pRepro));
 		addBirthEvents(child);
 	}
 
 	private static void deathEvent(Individual person){
-		if(new RandomUtils().getRandomEvent(1 - pop.fitness(person) * pop.fitness(person))){
+		if(new RandomUtils().getRandomEvent(1.00 - pop.fitness(person) * pop.fitness(person))){
 			pop.remove(person);
 		} else {
-			addDeathEvent(person);
+			addDeathEvent(person, (1.00 - (Math.log(1.00 - pop.fitness(person)))) * pDeath);
 		}
 	}
 
@@ -151,11 +154,17 @@ public class Simulator{
 	}
 
 	/*
+	*	Adds up the time the simulation has run for
+	*/
+	private static void addTime(Event e){
+		currentTime += e.time();
+	}
+
+	/*
 	*	Check if any of the exit-parameters have been met.
 	*/
-	private static boolean endCheck(Event e){
-		double currentTime = e.time();
-		if((currentTime >= simulationTime) || (pop.size() <= 0)){
+	private static boolean checkTime(double now){
+		if(now >= targetTime){
 			return false;
 		} else {
 			return true;
