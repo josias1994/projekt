@@ -39,14 +39,17 @@ public class Simulator{
 		City[] currentCities = new CityGenerator().generate();
 		createInitialPopulation(currentCities);
 		do{
+			epidemicCheck();
 			if(queue.hasNext()){
-				epidemicCheck();
 				Event currentEvent = queue.next();
-				addTime(currentEvent);
-				Individual currentIndividual = currentEvent.individual();
-				simulateEvent(currentEvent, currentIndividual);
-				System.out.println(currentEvent.toString());
-				goOn = checkTime(currentTime);
+				currentTime = addTime(currentEvent);
+				if(checkTime(currentTime)){
+					Individual currentIndividual = currentEvent.individual();
+					simulateEvent(currentEvent, currentIndividual);
+					System.out.println(currentEvent.toString());
+				}else{
+					goOn = false;
+				}
 			}
 		}while(goOn);
 		endSimulation();
@@ -100,25 +103,26 @@ public class Simulator{
 
 	private static void addMutationEvent(Individual person, double averageTimeProbability){
 		double mTime = new RandomUtils().getRandomTime(averageTimeProbability);
-		Event mutationEvent = new Event(MUTATION, mTime, person);
+		Event mutationEvent = new Event(MUTATION, (currentTime + mTime), person);
 		queue.add(mutationEvent);
 	}
 
 	private static void addReproductionEvent(Individual person, double averageTimeProbability){
 		double rTime = new RandomUtils().getRandomTime(averageTimeProbability);
-		Event reproductionEvent = new Event(REPRODUCTION, rTime, person);
+		Event reproductionEvent = new Event(REPRODUCTION, (currentTime + rTime), person);
 		queue.add(reproductionEvent);
 	}
 
 	private static void addDeathEvent(Individual person, double averageTimeProbability){
 		double dTime = new RandomUtils().getRandomTime(averageTimeProbability);
-		Event deathEvent = new Event(DEATH, dTime, person);
+		Event deathEvent = new Event(DEATH, (currentTime + dTime), person);
 		queue.add(deathEvent);
 	}
 
 	private static void mutationEvent(Individual person){
 		if(new RandomUtils().getRandomEvent((1.0 - pop.fitness(person)) * (1.0 - pop.fitness(person)))){
 			person.mutate();
+			//add timecost
 			if(new RandomUtils().getRandomEvent(30.0)){
 				person.mutate();
 				if(new RandomUtils().getRandomEvent(15.0)){
@@ -156,8 +160,9 @@ public class Simulator{
 	/*
 	*	Adds up the time the simulation has run for
 	*/
-	private static void addTime(Event e){
-		currentTime += e.time();
+	private static double addTime(Event e){
+		double nowTime = 0;
+		return(nowTime += e.time());
 	}
 
 	/*
